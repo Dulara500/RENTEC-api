@@ -1,6 +1,9 @@
 import User from "../Models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function getUsers(){
     return User.find();
@@ -29,7 +32,7 @@ export async function loginUser(email,password){
         id : user._id,
         email : user.email,
         role : user.role
-    },"kvaudio123",{
+    },process.env.token_secret,{
         expiresIn : "1h"
     })
 

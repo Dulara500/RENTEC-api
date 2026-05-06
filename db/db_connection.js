@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
-let mongourl = "mongodb://admin:123@ac-x3owh2u-shard-00-00.wzvlsik.mongodb.net:27017,ac-x3owh2u-shard-00-01.wzvlsik.mongodb.net:27017,ac-x3owh2u-shard-00-02.wzvlsik.mongodb.net:27017/?ssl=true&replicaSet=atlas-148w92-shard-0&authSource=admin&appName=Cluster0"
+dotenv.config();
+
+let mongourl = process.env.MONGO_URL
 
 export async function connectToDatabase() {
 

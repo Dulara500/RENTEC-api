@@ -6,6 +6,7 @@ import productRoute from "./routes/productRoute.js";
 import authentication from "./middleware/authentication.js";
 import authorization from "./middleware/authorization.js";
 
+
 const app = express();
 app.use(express.json());
 

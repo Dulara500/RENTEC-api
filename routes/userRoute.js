@@ -30,11 +30,12 @@ userRoute.post('/',async (req,res)=>{
 
 userRoute.post('/login',async (req,res)=>{
     try{
-        let token = await loginUser(req.body.email,req.body.password);
-        if(token){
+        let result = await loginUser(req.body.email,req.body.password);
+        if(result){
             res.json({
                 "message" : "Login successful",
-                "token" : token
+                "token" : result.token,
+                "user" : result.user
             })
         }else{
             res.status(401).json({

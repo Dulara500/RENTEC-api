@@ -4,7 +4,7 @@ import authorization from "../middleware/authorization.js";
 import express from "express";
 let reviewRoute = express.Router();
 
-reviewRoute.post('/',async (req,res)=>{
+reviewRoute.post('/',authorization("customer"),async (req,res)=>{
     console.log(req.user);
     try{
         await addReview(req.body);

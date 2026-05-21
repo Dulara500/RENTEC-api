@@ -17,6 +17,7 @@ export function registerUser(data){
 
 export async function loginUser(email,password){
     let user = await User.findOne({email});
+    console.log(user);
 
     if(!user){
         return null;
@@ -35,8 +36,7 @@ export async function loginUser(email,password){
         role : user.role,
         phone : user.phone
     },process.env.token_secret,{
-        expiresIn : "1h"
+        expiresIn : "24h"
     })
-
-    return token;
+    return {token:token,user:user};
 }

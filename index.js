@@ -7,10 +7,12 @@ import authentication from "./middleware/authentication.js";
 import authorization from "./middleware/authorization.js";
 import reviewRoute from "./routes/reviewRoute.js";
 import inquiryRorte from "./routes/inquiryRoute.js";
+import cors from "cors";
 
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // Connect to MongoDB
 await connectToDatabase();

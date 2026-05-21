@@ -2,7 +2,9 @@ import authentication from "../middleware/authentication.js";
 import Product from "../models/product.js";
 
 export function getProducts(user){
+    console.log(user);
     if(user==null || user.role!=="admin"){
+        
         return Product.find({availability:true});
     }
     return Product.find();

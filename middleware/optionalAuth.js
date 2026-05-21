@@ -3,11 +3,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 const optionalAuth = (req,res,next)=>{
-    let token = req.headers.authorization.split(" ")[1];
-    if(!token){
+    if(!req.headers.authorization){
         req.user = null;
         return next();
     }
+    let token = req.headers.authorization.split(" ")[1];
     
     jwt.verify(token,process.env.token_secret,(err,decoded)=>{
         if(err){

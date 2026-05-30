@@ -25,3 +25,7 @@ export function upadateProduct(key,data){
 export function deleteProduct(key){
     return Product.deleteOne({key});
 }
+
+export function findProduct(key){
+    return Product.findOne({key});
+}

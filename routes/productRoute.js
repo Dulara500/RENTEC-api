@@ -18,6 +18,18 @@ productRoute.get('/',optionalAuth, async (req,res)=>{
     }
 });
 
+productRoute.get('/:key',optionalAuth, async (req,res)=>{
+    try{
+        let product = await findProduct(req.params.key);
+        res.json(product);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({
+            "message" : "error while fetching product"
+        })
+    }
+})
+
 productRoute.post('/',authentication, async (req,res)=>{
     try{
         await createProduct(req);

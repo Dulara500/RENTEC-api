@@ -15,6 +15,11 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
+    status:{
+        type:String,
+        required:true,
+        default:"pending"
+    },
     orderItems:{
         type:[{
             product:{

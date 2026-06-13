@@ -45,7 +45,7 @@ userRoute.post('/login',async (req,res)=>{
         }
     }catch(err){
         res.status(500).json({
-            "message" : "error while logging in"
+            "message" : err || "error while logging in"
         });
     }
 });

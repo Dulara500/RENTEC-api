@@ -17,17 +17,24 @@ export function registerUser(data){
 
 export async function loginUser(email,password){
     let user = await User.findOne({email});
-    console.log(user);
+    console.log("user",user);
+
+    if(user.isBlocked){
+        throw new Error("You are blocked from accessing the application");
+    }
 
     if(!user){
         return null;
     }
+
 
     let isPasswordValid = await bcrypt.compare(password,user.password);
 
     if(!isPasswordValid){
         return null;
     }
+
+
 
     let token = jwt.sign({
         id : user._id,

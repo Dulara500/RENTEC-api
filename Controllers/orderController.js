@@ -59,7 +59,7 @@ export async function createOrder(req){
         const result = await newOrder.save();
         return result;
     }catch(e){
-        return e || {message: "Failed to Create Order"}
+        throw e;
     }
     
 }

@@ -6,16 +6,18 @@ dotenv.config();
 let mongourl = process.env.MONGO_URL
 
 export async function connectToDatabase() {
-
-    try{
-        console.log("Attempting to connect to MongoDB...");
-        await mongoose.connect(mongourl);
-        console.log("Connected to MongoDB");
-    }catch(error){
-        console.error("Error connecting to MongoDB:", error);
-        process.exit(1); // Exit the process with an error code
-        
+    const connectWithRetry = async () => {
+        try {
+            console.log("Attempting to connect to MongoDB...");
+            await mongoose.connect(mongourl);
+            console.log("Connected to MongoDB successfully");
+        } catch (error) {
+            console.error("Error connecting to MongoDB. Retrying in 5 seconds...", error.message || error);
+            setTimeout(connectWithRetry, 5000);
+        }
     };
-    console.log("Database connection function executed");
+
+    connectWithRetry();
+    console.log("Database connection process initiated in background");
 }
 

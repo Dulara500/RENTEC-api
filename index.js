@@ -18,7 +18,7 @@ app.use(cors());
 dotenv.config();
 
 // Connect to MongoDB
-await connectToDatabase();
+connectToDatabase();
 
 // Use the user route
 app.use("/api/users", userRoute);

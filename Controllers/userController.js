@@ -56,3 +56,31 @@ export async function blockAndUnblockUser(email,status){
     const user = await User.findOneAndUpdate({email},{$set:{isBlocked:status}},{new:true});
     return user;
 }
+
+export async function updateUserProfile(id, data){
+    const { firstName, lastName, phone, address, profilePic } = data;
+    const user = await User.findById(id);
+    if(!user){
+        throw new Error("User not found");
+    }
+    
+    if (firstName !== undefined) user.firstName = firstName;
+    if (lastName !== undefined) user.lastName = lastName;
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (profilePic !== undefined) user.profilePic = profilePic;
+    
+    const updatedUser = await user.save();
+    
+    const token = jwt.sign({
+        id : updatedUser._id,
+        name: updatedUser.firstName + " " + updatedUser.lastName,
+        email : updatedUser.email,
+        role : updatedUser.role,
+        phone : updatedUser.phone
+    },process.env.token_secret,{
+        expiresIn : "24h"
+    });
+    
+    return { user: updatedUser, token: token };
+}

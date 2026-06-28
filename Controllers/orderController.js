@@ -53,6 +53,7 @@ export async function createOrder(req){
     orderInfo.totalAmount = oneDayCost * data.days;
     orderInfo.shippingAddress = data.shippingAddress;
     orderInfo.paymentMethod = data.paymentMethod;
+    orderInfo.status = data.status;
 
     console.log(orderInfo)
 
@@ -72,5 +73,14 @@ export async function getOrder(){
         return orders;
     }catch(e){
         throw new Error("Failed to Get Order")
+    }
+}
+
+export async function getCustomerOrders(email){
+    try{
+        const orders = await Order.find({email});
+        return orders;
+    }catch(e){
+        throw new Error("Failed to Get Customer Orders")
     }
 }

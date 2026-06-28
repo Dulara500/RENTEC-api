@@ -1,5 +1,5 @@
 import express from "express";
-import { getUsers,registerUser,loginUser,blockAndUnblockUser } from "../Controllers/userController.js";
+import { getUsers,registerUser,loginUser,blockAndUnblockUser,updateUserProfile } from "../Controllers/userController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 let userRoute = express.Router();
@@ -49,6 +49,21 @@ userRoute.post('/login',async (req,res)=>{
         }
         res.status(500).json({
             "message" : err.message || "error while logging in"
+        });
+    }
+});
+
+userRoute.put('/profile',authentication,async (req,res)=>{
+    try{
+        let result = await updateUserProfile(req.user.id,req.body);
+        res.json({
+            "message" : "Profile updated successfully",
+            "user" : result.user,
+            "token": result.token
+        })
+    }catch(err){
+        res.status(500).json({
+            "message" : err.message || "error while updating profile"
         });
     }
 });

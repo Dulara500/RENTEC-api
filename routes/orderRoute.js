@@ -1,5 +1,5 @@
 import express from "express"
-import { createOrder, getOrder, getCustomerOrders, cancelOrder } from "../Controllers/orderController.js";
+import { createOrder, getOrder, getCustomerOrders, cancelOrder, updateStatus } from "../Controllers/orderController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 
@@ -33,7 +33,8 @@ orderRoute.get('/my-orders',authentication,authorization("customer", "admin"),as
     }
 });
 
-orderRoute.delete('/:orderId',authentication,authorization("customer"),async (req,res)=>{
+// Customer: cancel own pending order within 15-minute window
+orderRoute.put('/:orderId/cancel',authentication,authorization("customer"),async (req,res)=>{
     try{
         const order = await cancelOrder(req.params.orderId, req.user.email);
         res.status(200).json({
@@ -47,6 +48,25 @@ orderRoute.delete('/:orderId',authentication,authorization("customer"),async (re
             : 500;
         res.status(status).json({
             "message" : err.message || "error while cancelling order"
+        })
+    }
+});
+
+// Admin: update order status (payed / approved / rejected)
+orderRoute.put('/:orderId/status',authentication,authorization("admin"),async (req,res)=>{
+    try{
+        const allowed = ["pending","payed","approved","rejected","cancelled"];
+        if(!allowed.includes(req.body.status)){
+            return res.status(400).json({ "message": "Invalid status value" });
+        }
+        const order = await updateStatus(req.params.orderId, req.body.status);
+        res.status(200).json({
+            "message" : "Order status updated successfully",
+            "order" : order
+        });
+    }catch(err){
+        res.status(500).json({
+            "message" : err.message || "error while updating order"
         })
     }
 });
@@ -66,5 +86,3 @@ orderRoute.get('/',authentication,authorization("admin"),async (req,res)=>{
 });
 
 export default orderRoute;
-
-

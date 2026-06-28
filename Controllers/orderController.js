@@ -102,3 +102,13 @@ export async function cancelOrder(orderId, email){
     const updated = await order.save();
     return updated;
 }
+
+export async function updateStatus(orderId,status){
+    const order = await Order.findOne({orderId});
+    if(!order){
+        throw new Error("Order not found");
+    }
+    order.status = status;
+    const updated = await order.save();
+    return updated;
+}

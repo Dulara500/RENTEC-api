@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "../models/user.js";
+import axios from "axios";
 
 dotenv.config();
 
@@ -83,4 +84,54 @@ export async function updateUserProfile(id, data){
     });
     
     return { user: updatedUser, token: token };
+}
+
+export async function loginwithGoogle(req){
+    const accessToken = req.body.accessToken;
+    console.log(accessToken)
+    try{
+        const response = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo",{
+            headers: {
+                Authorization : `Bearer ${accessToken}`
+            }
+        })
+        console.log(response.data);
+        const user = await User.findOne({email:response.data.email})
+        if(user){
+           let token = jwt.sign({
+            id : user._id,
+            name: user.firstName + " " + user.lastName,
+            email : user.email,
+            role : user.role,
+            profilePic : user.profilePic
+        },process.env.token_secret,{
+            expiresIn : "24h"
+        })
+        return {token:token,user:user};
+        }else{
+            let newUser = new User({
+                email:response.data.email,
+                password:"123",
+                firstName:response.data.given_name,
+                lastName:response.data.family_name,
+                address:"Not given",
+                phone:"Not given",
+                profilePic:response.data.picture             
+            })
+            const savedUser = await newUser.save();
+            const token = jwt.sign({
+                id : savedUser._id,
+                name: savedUser.firstName + " " + savedUser.lastName,
+                email : savedUser.email,
+                role : savedUser.role,
+                profilePic : savedUser.profilePic
+            },process.env.token_secret,{
+                expiresIn : "24h"
+            })
+            return {token:token,user:savedUser};
+        }
+    }catch(e){
+        console.log(e)
+        throw e instanceof Error ? e : new Error("Error during Google authentication");
+    }
 }

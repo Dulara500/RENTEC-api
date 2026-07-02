@@ -1,5 +1,5 @@
 import express from "express";
-import { getUsers,registerUser,loginUser,blockAndUnblockUser,updateUserProfile } from "../Controllers/userController.js";
+import { getUsers,registerUser,loginUser,blockAndUnblockUser,updateUserProfile,loginwithGoogle } from "../Controllers/userController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 let userRoute = express.Router();
@@ -78,6 +78,21 @@ userRoute.put('/:key',authentication,authorization("admin"),async (req,res)=>{
     }catch(err){
         res.status(500).json({
             "message" : err.message || "error while blocking and unblocking user"
+        });
+    }
+});
+
+userRoute.post('/google', async(req,res) => {
+    try {
+        let result = await loginwithGoogle(req);
+        res.status(200).json({
+            "message" : "Login successful",
+            "token":result.token,
+            "user":result.user
+        })
+    } catch (error) {
+        res.status(500).json({
+            "message" : error.message || "error while logging in with google"
         });
     }
 });

@@ -3,8 +3,21 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User from "../models/user.js";
 import axios from "axios";
+import nodemailer from "nodemailer";
+import Otp from "../models/otp.js";
 
 dotenv.config();
+
+const transport = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth:{
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+})
 
 export function getUsers(){
     return User.find();
@@ -42,7 +55,8 @@ export async function loginUser(email,password){
             name: user.firstName + " " + user.lastName,
             email : user.email,
             role : user.role,
-            phone : user.phone
+            phone : user.phone,
+            emailVarified : user.emailVarified
         },process.env.token_secret,{
             expiresIn : "24h"
         })
@@ -103,7 +117,8 @@ export async function loginwithGoogle(req){
             name: user.firstName + " " + user.lastName,
             email : user.email,
             role : user.role,
-            profilePic : user.profilePic
+            profilePic : user.profilePic,
+            emailVarified : true
         },process.env.token_secret,{
             expiresIn : "24h"
         })
@@ -116,7 +131,8 @@ export async function loginwithGoogle(req){
                 lastName:response.data.family_name,
                 address:"Not given",
                 phone:"Not given",
-                profilePic:response.data.picture             
+                profilePic:response.data.picture,
+                emailVarified : true           
             })
             const savedUser = await newUser.save();
             const token = jwt.sign({
@@ -124,7 +140,8 @@ export async function loginwithGoogle(req){
                 name: savedUser.firstName + " " + savedUser.lastName,
                 email : savedUser.email,
                 role : savedUser.role,
-                profilePic : savedUser.profilePic
+                profilePic : savedUser.profilePic,
+                emailVarified : true
             },process.env.token_secret,{
                 expiresIn : "24h"
             })
@@ -134,4 +151,71 @@ export async function loginwithGoogle(req){
         console.log(e)
         throw e instanceof Error ? e : new Error("Error during Google authentication");
     }
+}
+
+export async function sendOtp(req){
+    if(!req.user){
+        throw new Error("Unauthorized");
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    // Delete any existing OTP for this email first to prevent duplicates
+    await Otp.deleteMany({ email: req.user.email });
+
+    const newOtp = new Otp({
+        email : req.user.email,
+        otp : otp
+    })
+
+    await newOtp.save();
+
+    const message = {
+        from : process.env.EMAIL_USER,
+        to : req.user.email,
+        subject : "Validating OTP",
+        text : `Your OTP is: ${otp}`
+    }
+
+    try {
+        await transport.sendMail(message);
+        return "OTP sent successfully";
+    } catch (err) {
+        console.error("Error sending OTP email:", err);
+        throw new Error("Error while sending OTP email: " + err.message);
+    }
+}
+
+export async function verifyOtp(req){
+    const otp = req.body.otp;
+    const user = await User.findOne({email:req.user.email});
+    if(!user){
+        throw new Error("User not found");
+    }
+    const otpData = await Otp.findOne({
+        email : user.email
+    })
+    if(!otpData){
+        throw new Error("OTP expired or not found");
+    }
+    if(otpData.otp !== otp){
+        throw new Error("Invalid OTP");
+    }
+    const updatedUser = await User.findOneAndUpdate({email:user.email},{$set:{emailVarified:true}},{new:true});
+    
+    // Delete OTP once verified
+    await Otp.deleteOne({ email: user.email });
+
+    const token = jwt.sign({
+        id : updatedUser._id,
+        name: updatedUser.firstName + " " + updatedUser.lastName,
+        email : updatedUser.email,
+        role : updatedUser.role,
+        phone : updatedUser.phone,
+        emailVarified : true
+    },process.env.token_secret,{
+        expiresIn : "24h"
+    });
+
+    return { user: updatedUser, token: token };
 }

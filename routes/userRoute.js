@@ -1,5 +1,5 @@
 import express from "express";
-import { getUsers,registerUser,loginUser,blockAndUnblockUser,updateUserProfile,loginwithGoogle } from "../Controllers/userController.js";
+import { getUsers,registerUser,loginUser,blockAndUnblockUser,updateUserProfile,loginwithGoogle,sendOtp,verifyOtp } from "../Controllers/userController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 let userRoute = express.Router();
@@ -96,6 +96,34 @@ userRoute.post('/google', async(req,res) => {
         });
     }
 });
+
+userRoute.get('/sendOtp',authentication,async (req,res)=>{
+    try{
+        await sendOtp(req);
+        res.json({
+            "message" : "OTP sent successfully"
+        })
+    }catch(err){
+        res.status(500).json({
+            "message" : err.message || "error while sending OTP"
+        });
+    }
+});
+
+userRoute.post('/verifyOtp',authentication,async (req,res)=>{
+    try{
+        let result = await verifyOtp(req);
+        res.json({
+            "message" : "OTP verified successfully",
+            "user" : result.user,
+            "token": result.token
+        })
+    }catch(err){
+        res.status(500).json({
+            "message" : err.message || "error while verifying OTP"
+        });
+    }
+})
 
 
 export default userRoute;

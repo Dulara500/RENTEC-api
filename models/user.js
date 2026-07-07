@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema({
     profilePic:{
         type:String,
         required:false
+    },
+    emailVarified:{
+        type:Boolean,
+        required:true,
+        default:false
     }
 
 });

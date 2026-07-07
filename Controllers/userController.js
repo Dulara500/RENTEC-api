@@ -174,7 +174,7 @@ export async function sendOtp(req){
         from : process.env.EMAIL_USER,
         to : req.user.email,
         subject : "Validating OTP",
-        text : `Your OTP is: ${otp}`
+        text : `This code expires in 2 minutes : ${otp}`
     }
 
     try {

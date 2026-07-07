@@ -201,7 +201,7 @@ export async function verifyOtp(req){
     if(otpData.otp !== otp){
         throw new Error("Invalid OTP");
     }
-    const updatedUser = await User.findOneAndUpdate({email:user.email},{$set:{emailVarified:true}},{new:true});
+    const updatedUser = await User.findOneAndUpdate({email:user.email},{$set:{emailVarified:true}},{ returnDocument: 'after' });
     
     // Delete OTP once verified
     await Otp.deleteOne({ email: user.email });

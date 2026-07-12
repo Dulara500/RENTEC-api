@@ -112,3 +112,51 @@ export async function updateStatus(orderId,status){
     const updated = await order.save();
     return updated;
 }
+
+export async function updateStockOnItemReturn(orderId){
+    const order = await Order.findOne({orderId});
+    if(!order){
+        throw new Error("Order not found");
+    }
+    for(let i=0; i<order.orderItems.length; i++){
+        const product = await Product.findOne({key:order.orderItems[i].product.key});
+        if(!product){
+            throw new Error("Product not found");
+        }
+        const updated = await Product.findOneAndUpdate({key:order.orderItems[i].product.key},{
+            $inc:{quantity:order.orderItems[i].quantity}
+        },{new:true})
+        if(updated.quantity>0){
+            await Product.findOneAndUpdate({key:order.orderItems[i].product.key},{
+                $set:{availability:true}
+            },{new:true})
+        }
+    }
+    return true;
+}
+
+export async function updateStockOnItemRent(orderId){
+    const order = await Order.findOne({orderId});
+    if(!order){
+        throw new Error("Order not found");
+    }
+    for(let i=0; i<order.orderItems.length; i++){
+        const product = await Product.findOne({key:order.orderItems[i].product.key});
+        if(!product){
+            throw new Error("Product not found");
+        }
+        const updated = await Product.findOneAndUpdate({key:order.orderItems[i].product.key},{
+            $inc:{quantity:-order.orderItems[i].quantity}
+        },{new:true})
+        if(updated.quantity===0){
+            await Product.findOneAndUpdate({key:order.orderItems[i].product.key},{
+                $set:{availability:false}
+            },{new:true})
+        }else{
+            await Product.findOneAndUpdate({key:order.orderItems[i].product.key},{
+                $set:{availability:true}
+            },{new:true})
+        }
+    }
+    return true;
+}

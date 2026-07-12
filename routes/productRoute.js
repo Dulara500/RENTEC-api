@@ -1,4 +1,4 @@
-import { getProducts,createProduct,upadateProduct,deleteProduct,findProduct } from "../Controllers/productController.js";
+import { getProducts,createProduct,upadateProduct,deleteProduct,findProduct,getStockCount } from "../Controllers/productController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 import optionalAuth from "../middleware/optionalAuth.js";
@@ -45,6 +45,18 @@ productRoute.delete('/delete/:key',authentication,authorization("admin"), async 
         })
     }
 });
+
+productRoute.get('/stockCount/:key',optionalAuth, async (req,res)=>{
+    try{
+        let product = await getStockCount(req.params.key);
+        res.json(product);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({
+            "message" : "error while fetching product"
+        })
+    }
+})
 
 productRoute.get('/:key',optionalAuth, async (req,res)=>{
     try{

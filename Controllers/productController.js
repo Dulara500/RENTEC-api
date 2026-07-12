@@ -3,10 +3,6 @@ import Product from "../models/product.js";
 
 export function getProducts(user){
     console.log(user);
-    if(user==null || user.role!=="admin"){
-        
-        return Product.find({availability:true});
-    }
     return Product.find();
 };
 
@@ -28,4 +24,8 @@ export function deleteProduct(key){
 
 export function findProduct(key){
     return Product.findOne({key});
+}
+
+export function getStockCount(key){
+    return Product.findOne({key}).select("quantity");
 }

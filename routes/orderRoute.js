@@ -1,5 +1,5 @@
 import express from "express"
-import { createOrder, getOrder, getCustomerOrders, cancelOrder, updateStatus, updateStockOnItemRent,updateStockOnItemReturn } from "../Controllers/orderController.js";
+import { createOrder, getOrder, getCustomerOrders, cancelOrder, updateStatus, updateStockOnItemRent,updateStockOnItemReturn,updateStockOnOrderCancel } from "../Controllers/orderController.js";
 import authentication from "../middleware/authentication.js";
 import authorization from "../middleware/authorization.js";
 
@@ -102,6 +102,20 @@ orderRoute.put('/update-stock-on-rent/:orderId',authentication,async (req,res)=>
 orderRoute.put('/update-stock-on-return/:orderId',authentication,authorization("admin"),async (req,res)=>{
     try{
         const order = await updateStockOnItemReturn(req.params.orderId);
+        res.status(200).json({
+            "message" : "Stock updated successfully",
+            "order" : order
+        });
+    }catch(err){
+        res.status(500).json({
+            "message" : err.message ||"error while updating stock"
+        })
+    }
+});
+
+orderRoute.put('/update-stock-on-cancel/:orderId',authentication,authorization("customer", "admin"),async (req,res)=>{
+    try{
+        const order = await updateStockOnOrderCancel(req.params.orderId);
         res.status(200).json({
             "message" : "Stock updated successfully",
             "order" : order
